@@ -17,6 +17,7 @@ const uint16_t REFRESH_MS = 60;
 const uint16_t UI_MESSAGE_MS = 700;
 const uint16_t DEBOUNCE_MS = 35;
 const uint16_t BUTTON_STEP_GUARD_MS = 280;
+const uint16_t CHAR_SWITCH_HOLD_MS = 3000;
 
 struct VuProfile {
   const char *name;
@@ -41,6 +42,18 @@ const uint8_t SENS_COUNT = sizeof(SENS_LEVELS) / sizeof(SENS_LEVELS[0]);
 uint8_t profileIndex = 2;     // inicia no AGRES (default)
 uint8_t sensitivityIndex = 2; // inicia em 50% (default)
 
+enum VuCharStyle : uint8_t {
+  CHAR_STYLE_SOLID = 0,
+  CHAR_STYLE_HOLLOW = 1,
+  CHAR_STYLE_ROUNDED = 2,
+};
+
+const uint8_t CHAR_STYLE_COUNT = 3;
+const uint8_t LCD_CHAR_HOLLOW = 0;
+const uint8_t LCD_CHAR_ROUNDED = 1;
+
+uint8_t vuCharStyle = CHAR_STYLE_SOLID;
+
 uint8_t peakLevel = 1;
 unsigned long peakUntilMs = 0;
 float lowBand = 0;
@@ -51,6 +64,47 @@ unsigned long sensLastPress = 0;
 unsigned long uiMessageUntil = 0;
 bool lastProfileBtnState = HIGH;
 bool lastSensBtnState = HIGH;
+bool sensHoldHandled = false;
+unsigned long sensPressStartMs = 0;
+
+
+const uint8_t CHAR_HOLLOW_BITMAP[8] = {
+  B11111,
+  B10001,
+  B10001,
+  B10001,
+  B10001,
+  B10001,
+  B10001,
+  B11111
+};
+
+const uint8_t CHAR_ROUNDED_BITMAP[8] = {
+  B01110,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B11111,
+  B01110
+};
+
+uint8_t vuBarChar() {
+  if (vuCharStyle == CHAR_STYLE_HOLLOW) return LCD_CHAR_HOLLOW;
+  if (vuCharStyle == CHAR_STYLE_ROUNDED) return LCD_CHAR_ROUNDED;
+  return 255;
+}
+
+void showCharStyleMessage() {
+  const char *styleName = "Solido";
+  if (vuCharStyle == CHAR_STYLE_HOLLOW) styleName = "Quadrado Vazio";
+  if (vuCharStyle == CHAR_STYLE_ROUNDED) styleName = "Bolinhas Cheias";
+
+  char line1[17];
+  snprintf(line1, sizeof(line1), "%u/3 %s", vuCharStyle + 1, styleName);
+  showModeMessage("Caractere VU:", line1);
+}
 
 uint8_t levelFromAmplitude(float amplitude) {
   long mapped = map((long)amplitude, 0, 350, 0, BAR_WIDTH);
@@ -62,7 +116,7 @@ uint8_t levelFromAmplitude(float amplitude) {
 void drawBar(uint8_t row, uint8_t filled) {
   lcd.setCursor(0, row);
   for (uint8_t i = 0; i < BAR_WIDTH; i++) {
-    lcd.print(i < filled ? (char)255 : ' ');
+    lcd.print(i < filled ? (char)vuBarChar() : ' ');
   }
 }
 
@@ -148,7 +202,20 @@ void handleButtons() {
     showProfileMessage();
   }
 
-  if (lastSensBtnState == HIGH && sensState == LOW &&
+  if (lastSensBtnState == HIGH && sensState == LOW) {
+    sensPressStartMs = now;
+    sensHoldHandled = false;
+  }
+
+  if (sensState == LOW && !sensHoldHandled &&
+      (long)(now - sensPressStartMs) >= CHAR_SWITCH_HOLD_MS) {
+    vuCharStyle = (vuCharStyle + 1) % CHAR_STYLE_COUNT;
+    sensHoldHandled = true;
+    sensLastPress = now;
+    showCharStyleMessage();
+  }
+
+  if (lastSensBtnState == LOW && sensState == HIGH && !sensHoldHandled &&
       (now - sensLastPress) > (DEBOUNCE_MS + BUTTON_STEP_GUARD_MS)) {
     sensLastPress = now;
     sensitivityIndex = (sensitivityIndex + 1) % SENS_COUNT;
@@ -165,6 +232,8 @@ void setup() {
 
   lcd.init();
   lcd.backlight();
+  lcd.createChar(LCD_CHAR_HOLLOW, (uint8_t *)CHAR_HOLLOW_BITMAP);
+  lcd.createChar(LCD_CHAR_ROUNDED, (uint8_t *)CHAR_ROUNDED_BITMAP);
 
   lcdSelfTestAnimation();
   showModeMessage("VU Meter", "Iniciando...");
