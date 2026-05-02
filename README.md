@@ -87,4 +87,32 @@ Na Arduino IDE:
 - Barra do VU com caractere de **quadrado cheio**.
 - As **duas linhas mostram o mesmo volume** (espelhadas).
 - Mesmo em silêncio, a **primeira coluna permanece acesa** nas duas linhas.
-- Possui **peak hold** de 1 segundo com marcador `|` na posição de pico.
+- Possui **peak hold** com marcador `|` na posição de pico.
+
+- Filtro passa-baixa para destacar **graves e médio-graves** no movimento do VU.
+- Queda do VU mais rápida com suavização assimétrica (ataque e release diferentes).
+- Peak hold reduzido para **350 ms** para evitar sensação de barra "presa" no alto.
+
+
+## Botões de controle (novo)
+
+Use dois botões com **INPUT_PULLUP** (um lado no pino, outro no GND):
+
+- Botão de **perfil** -> D6
+- Botão de **sensibilidade** -> D7
+
+### Perfis disponíveis (3)
+
+1. **SUAVE**: resposta mais estável, menos nervosa.
+2. **EQUIL**: equilíbrio geral (padrão).
+3. **AGRES**: resposta mais rápida e dinâmica.
+
+### Sensibilidades disponíveis (5)
+
+- Nível 1: 70%
+- Nível 2: 90%
+- Nível 3: 110% (padrão)
+- Nível 4: 135%
+- Nível 5: 165%
+
+Ao trocar perfil/sensibilidade, o LCD mostra o modo selecionado por alguns instantes.
