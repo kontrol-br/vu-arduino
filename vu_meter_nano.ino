@@ -98,7 +98,7 @@ void showSensitivityMessage() {
 void lcdSelfTestAnimation() {
   lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Teste LCD I2C");
+  lcd.print("Teste LCD");
   lcd.setCursor(0, 1);
   lcd.print("Aguarde...");
   delay(700);
@@ -167,7 +167,7 @@ void setup() {
   lcd.backlight();
 
   lcdSelfTestAnimation();
-  showModeMessage("VU Meter I2C", "Iniciando...");
+  showModeMessage("VU Meter", "Iniciando...");
   delay(700);
   lcd.clear();
 }
