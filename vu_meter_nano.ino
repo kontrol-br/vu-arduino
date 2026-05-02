@@ -39,7 +39,7 @@ const float SENS_LEVELS[] = {0.20f, 0.45f, 0.80f, 1.15f, 1.50f};
 const uint8_t SENS_COUNT = sizeof(SENS_LEVELS) / sizeof(SENS_LEVELS[0]);
 
 uint8_t profileIndex = 2;     // inicia no AGRES (default)
-uint8_t sensitivityIndex = 3; // inicia em 75% (default)
+uint8_t sensitivityIndex = 2; // inicia em 50% (default)
 
 uint8_t peakLevel = 1;
 unsigned long peakUntilMs = 0;
