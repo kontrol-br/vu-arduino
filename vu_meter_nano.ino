@@ -15,7 +15,8 @@ const uint8_t BTN_SENSITIVITY_PIN = 7;  // botão para trocar sensibilidade
 const uint8_t BAR_WIDTH = 16;
 const uint16_t REFRESH_MS = 60;
 const uint16_t UI_MESSAGE_MS = 700;
-const uint16_t DEBOUNCE_MS = 40;
+const uint16_t DEBOUNCE_MS = 35;
+const uint16_t BUTTON_STEP_GUARD_MS = 280;
 
 struct VuProfile {
   const char *name;
@@ -27,17 +28,18 @@ struct VuProfile {
 };
 
 const VuProfile PROFILES[] = {
-  {"SUAVE", 60, 500, 0.12f, 0.35f, 0.15f},
-  {"EQUIL", 40, 350, 0.18f, 0.45f, 0.20f},
-  {"AGRES", 25, 220, 0.28f, 0.65f, 0.35f},
+  {"SUAVE", 45, 300, 0.20f, 0.50f, 0.25f},
+  {"EQUIL", 35, 220, 0.30f, 0.65f, 0.35f},
+  {"AGRES", 15, 120, 0.45f, 0.90f, 0.55f},
 };
 const uint8_t PROFILE_COUNT = sizeof(PROFILES) / sizeof(PROFILES[0]);
 
-const float SENS_LEVELS[] = {0.70f, 0.90f, 1.10f, 1.35f, 1.65f};
+const uint8_t SENS_PERCENTS[] = {10, 25, 50, 75, 100};
+const float SENS_LEVELS[] = {0.20f, 0.45f, 0.80f, 1.15f, 1.50f};
 const uint8_t SENS_COUNT = sizeof(SENS_LEVELS) / sizeof(SENS_LEVELS[0]);
 
 uint8_t profileIndex = 1;     // inicia no EQUIL
-uint8_t sensitivityIndex = 2; // inicia em 1.10x
+uint8_t sensitivityIndex = 2; // inicia em 50%
 
 uint8_t peakLevel = 1;
 unsigned long peakUntilMs = 0;
@@ -47,6 +49,8 @@ float smoothed = 0;
 unsigned long profileLastPress = 0;
 unsigned long sensLastPress = 0;
 unsigned long uiMessageUntil = 0;
+bool lastProfileBtnState = HIGH;
+bool lastSensBtnState = HIGH;
 
 uint8_t levelFromAmplitude(float amplitude) {
   long mapped = map((long)amplitude, 0, 350, 0, BAR_WIDTH);
@@ -87,8 +91,7 @@ void showProfileMessage() {
 
 void showSensitivityMessage() {
   char line1[17];
-  int sensPct = (int)(SENS_LEVELS[sensitivityIndex] * 100.0f + 0.5f);
-  snprintf(line1, sizeof(line1), "%u/5 %d%%", sensitivityIndex + 1, sensPct);
+  snprintf(line1, sizeof(line1), "%u/5 %u%%", sensitivityIndex + 1, SENS_PERCENTS[sensitivityIndex]);
   showModeMessage("Sensibilidade:", line1);
 }
 
@@ -130,7 +133,12 @@ int peakToPeakAmplitude(uint16_t windowMs) {
 void handleButtons() {
   unsigned long now = millis();
 
-  if (digitalRead(BTN_PROFILE_PIN) == LOW && (now - profileLastPress) > DEBOUNCE_MS) {
+  bool profileState = digitalRead(BTN_PROFILE_PIN);
+  bool sensState = digitalRead(BTN_SENSITIVITY_PIN);
+
+  // Aciona apenas na borda de descida (HIGH->LOW), evitando repetição ao segurar
+  if (lastProfileBtnState == HIGH && profileState == LOW &&
+      (now - profileLastPress) > (DEBOUNCE_MS + BUTTON_STEP_GUARD_MS)) {
     profileLastPress = now;
     profileIndex = (profileIndex + 1) % PROFILE_COUNT;
     peakLevel = 1;
@@ -140,11 +148,15 @@ void handleButtons() {
     showProfileMessage();
   }
 
-  if (digitalRead(BTN_SENSITIVITY_PIN) == LOW && (now - sensLastPress) > DEBOUNCE_MS) {
+  if (lastSensBtnState == HIGH && sensState == LOW &&
+      (now - sensLastPress) > (DEBOUNCE_MS + BUTTON_STEP_GUARD_MS)) {
     sensLastPress = now;
     sensitivityIndex = (sensitivityIndex + 1) % SENS_COUNT;
     showSensitivityMessage();
   }
+
+  lastProfileBtnState = profileState;
+  lastSensBtnState = sensState;
 }
 
 void setup() {

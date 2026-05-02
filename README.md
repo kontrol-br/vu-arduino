@@ -103,16 +103,19 @@ Use dois botões com **INPUT_PULLUP** (um lado no pino, outro no GND):
 
 ### Perfis disponíveis (3)
 
-1. **SUAVE**: resposta mais estável, menos nervosa.
-2. **EQUIL**: equilíbrio geral (padrão).
-3. **AGRES**: resposta mais rápida e dinâmica.
+1. **SUAVE**: suave, porém com resposta mais presente (menos "lento" que antes).
+2. **EQUIL**: equilíbrio entre estabilidade e impacto.
+3. **AGRES**: resposta bem mais agressiva, com ataque/queda rápidos.
 
 ### Sensibilidades disponíveis (5)
 
-- Nível 1: 70%
-- Nível 2: 90%
-- Nível 3: 110% (padrão)
-- Nível 4: 135%
-- Nível 5: 165%
+- Nível 1: 10%
+- Nível 2: 25%
+- Nível 3: 50%
+- Nível 4: 75%
+- Nível 5: 100%
 
 Ao trocar perfil/sensibilidade, o LCD mostra o modo selecionado por alguns instantes.
+
+
+Para evitar múltiplas trocas por um único clique, os botões agora usam detecção por **borda de descida** (HIGH->LOW) + janela de guarda entre passos.
