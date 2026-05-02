@@ -28,9 +28,9 @@ struct VuProfile {
 };
 
 const VuProfile PROFILES[] = {
-  {"SUAVE", 14, 112, 0.46f, 0.77f, 0.56f},
-  {"EQUIL", 13, 103, 0.50f, 0.83f, 0.61f},
-  {"AGRES", 11, 86, 0.59f, 1.00f, 0.73f},
+  {"SUAVE", 14, 1000, 0.46f, 0.77f, 0.56f},
+  {"EQUIL", 13, 1000, 0.50f, 0.83f, 0.61f},
+  {"AGRES", 11, 1000, 0.59f, 1.00f, 0.73f},
 };
 const uint8_t PROFILE_COUNT = sizeof(PROFILES) / sizeof(PROFILES[0]);
 
