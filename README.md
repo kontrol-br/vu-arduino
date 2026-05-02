@@ -80,3 +80,11 @@ Na Arduino IDE:
 - Ajustar suavização em `smoothed = 0.75 * ... + 0.25 * ...`.
 - Mudar tempo de atualização em `REFRESH_MS`.
 - Mudar janela de amostragem em `SAMPLE_WINDOW_MS`.
+
+
+## Comportamento do VU implementado
+
+- Barra do VU com caractere de **quadrado cheio**.
+- As **duas linhas mostram o mesmo volume** (espelhadas).
+- Mesmo em silêncio, a **primeira coluna permanece acesa** nas duas linhas.
+- Possui **peak hold** de 1 segundo com marcador `|` na posição de pico.

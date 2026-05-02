@@ -16,18 +16,20 @@ const uint8_t MIC_PIN = A0;
 const uint8_t BAR_WIDTH = 16;
 const uint16_t SAMPLE_WINDOW_MS = 40;
 const uint16_t REFRESH_MS = 60;
+const uint16_t PEAK_HOLD_MS = 1000;
 
 uint8_t levelFromAmplitude(int amplitude) {
   long mapped = map(amplitude, 0, 350, 0, BAR_WIDTH);
   if (mapped < 0) mapped = 0;
   if (mapped > BAR_WIDTH) mapped = BAR_WIDTH;
+  if (mapped < 1) mapped = 1; // mantém a 1ª coluna sempre acesa
   return (uint8_t)mapped;
 }
 
 void drawBar(uint8_t row, uint8_t filled) {
   lcd.setCursor(0, row);
   for (uint8_t i = 0; i < BAR_WIDTH; i++) {
-    lcd.print(i < filled ? '#' : ' ');
+    lcd.print(i < filled ? (char)255 : ' ');
   }
 }
 
@@ -65,6 +67,17 @@ void lcdSelfTestAnimation() {
   lcd.clear();
 }
 
+
+void drawPeakMarker(uint8_t row, uint8_t level, uint8_t peakLevel, bool showPeak) {
+  if (!showPeak) return;
+  if (peakLevel <= level) return;
+
+  uint8_t peakCol = peakLevel - 1;
+  if (peakCol >= BAR_WIDTH) peakCol = BAR_WIDTH - 1;
+  lcd.setCursor(peakCol, row);
+  lcd.print('|');
+}
+
 int peakToPeakAmplitude(uint16_t windowMs) {
   int minV = 1023;
   int maxV = 0;
@@ -97,13 +110,27 @@ void loop() {
   int p2p = peakToPeakAmplitude(SAMPLE_WINDOW_MS);
 
   static float smoothed = 0;
+  static uint8_t peakLevel = 1;
+  static unsigned long peakUntilMs = 0;
+
   smoothed = 0.75f * smoothed + 0.25f * p2p;
 
-  uint8_t levelTop = levelFromAmplitude((int)smoothed);
-  uint8_t levelBottom = levelFromAmplitude((int)(smoothed * 0.85f));
+  uint8_t level = levelFromAmplitude((int)smoothed);
 
-  drawBar(0, levelTop);
-  drawBar(1, levelBottom);
+  unsigned long now = millis();
+  if (level > peakLevel) {
+    peakLevel = level;
+    peakUntilMs = now + PEAK_HOLD_MS;
+  } else if ((long)(now - peakUntilMs) > 0) {
+    peakLevel = level;
+  }
+
+  bool showPeak = ((long)(peakUntilMs - now) > 0);
+
+  drawBar(0, level);
+  drawBar(1, level);
+  drawPeakMarker(0, level, peakLevel, showPeak);
+  drawPeakMarker(1, level, peakLevel, showPeak);
 
   delay(REFRESH_MS);
 }
