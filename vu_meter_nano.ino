@@ -30,7 +30,7 @@ struct VuProfile {
 const VuProfile PROFILES[] = {
   {"SUAVE", 45, 300, 0.20f, 0.50f, 0.25f},
   {"EQUIL", 35, 220, 0.30f, 0.65f, 0.35f},
-  {"AGRES", 15, 120, 0.45f, 0.90f, 0.55f},
+  {"AGRES", 12, 96, 0.54f, 1.00f, 0.66f},
 };
 const uint8_t PROFILE_COUNT = sizeof(PROFILES) / sizeof(PROFILES[0]);
 
@@ -38,8 +38,8 @@ const uint8_t SENS_PERCENTS[] = {10, 25, 50, 75, 100};
 const float SENS_LEVELS[] = {0.20f, 0.45f, 0.80f, 1.15f, 1.50f};
 const uint8_t SENS_COUNT = sizeof(SENS_LEVELS) / sizeof(SENS_LEVELS[0]);
 
-uint8_t profileIndex = 1;     // inicia no EQUIL
-uint8_t sensitivityIndex = 2; // inicia em 50%
+uint8_t profileIndex = 2;     // inicia no AGRES (default)
+uint8_t sensitivityIndex = 3; // inicia em 75% (default)
 
 uint8_t peakLevel = 1;
 unsigned long peakUntilMs = 0;
@@ -67,8 +67,8 @@ void drawBar(uint8_t row, uint8_t filled) {
 }
 
 void drawPeakMarker(uint8_t row, uint8_t level, uint8_t peak, bool showPeak) {
-  if (!showPeak || peak <= level) return;
-  uint8_t peakCol = peak - 1;
+  if (!showPeak) return;
+  uint8_t peakCol = (peak > 0) ? (peak - 1) : 0;
   if (peakCol >= BAR_WIDTH) peakCol = BAR_WIDTH - 1;
   lcd.setCursor(peakCol, row);
   lcd.print('|');

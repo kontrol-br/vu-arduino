@@ -105,7 +105,7 @@ Use dois botões com **INPUT_PULLUP** (um lado no pino, outro no GND):
 
 1. **SUAVE**: suave, porém com resposta mais presente (menos "lento" que antes).
 2. **EQUIL**: equilíbrio entre estabilidade e impacto.
-3. **AGRES**: resposta bem mais agressiva, com ataque/queda rápidos.
+3. **AGRES**: resposta ainda mais agressiva (~20% a mais), com ataque/queda mais rápidos.
 
 ### Sensibilidades disponíveis (5)
 
@@ -119,3 +119,11 @@ Ao trocar perfil/sensibilidade, o LCD mostra o modo selecionado por alguns insta
 
 
 Para evitar múltiplas trocas por um único clique, os botões agora usam detecção por **borda de descida** (HIGH->LOW) + janela de guarda entre passos.
+
+
+### Defaults de inicialização
+
+- Perfil padrão ao ligar: **AGRES**.
+- Sensibilidade padrão ao ligar: **75%**.
+
+O marcador de peak hold agora permanece visível durante a retenção em todos os perfis.
